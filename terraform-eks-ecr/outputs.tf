@@ -1,11 +1,11 @@
 output "ecr_repository_url" {
-  value = aws_ecr_repository.app.repository_url
+  value = module.ecr.repository_url
 }
 
 output "eks_cluster_name" {
-  value = aws_eks_cluster.main.name
+  value = module.eks.cluster_name
 }
 
 output "eks_cluster_endpoint" {
-  value = aws_eks_cluster.main.endpoint
+  value = module.eks.cluster_endpoint
 }

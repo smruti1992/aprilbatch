@@ -1,4 +1,14 @@
-# IAM Role for EKS Cluster
+data "aws_vpc" "default" {
+  default = true
+}
+
+data "aws_subnets" "default" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+}
+
 resource "aws_iam_role" "eks_role" {
   name = "${var.cluster_name}-role"
 
@@ -19,20 +29,7 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
   role       = aws_iam_role.eks_role.name
 }
 
-# Fetch default VPC and its subnets automatically
-data "aws_vpc" "default" {
-  default = true
-}
-
-data "aws_subnets" "default" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
-  }
-}
-
-# EKS Cluster
-resource "aws_eks_cluster" "main" {
+resource "aws_eks_cluster" "this" {
   name     = var.cluster_name
   role_arn = aws_iam_role.eks_role.arn
 
