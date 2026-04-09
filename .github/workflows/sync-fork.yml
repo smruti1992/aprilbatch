@@ -8,15 +8,27 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Sync fork with upstream
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            await github.rest.repos.mergeUpstream({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              branch: 'main'
-            });
-            console.log('Fork synced successfully with upstream.');
+            try {
+              const result = await github.rest.repos.mergeUpstream({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                branch: 'main'
+              });
+              console.log(`Fork synced successfully. Merge type: ${result.data.merge_type}`);
+            } catch (error) {
+              if (error.status === 409) {
+                core.setFailed('Sync failed: merge conflict detected. Manual resolution required.');
+              } else if (error.status === 422) {
+                core.warning('Repository is not a fork or is already up to date.');
+              } else {
+                core.setFailed(`Sync failed: ${error.message}`);
+              }
+            }
